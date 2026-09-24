@@ -1,0 +1,164 @@
+[
+ {
+  "domain": "speechmatics.com",
+  "score": 52,
+  "rationale": "1 interest keywords in domain; 3 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.speechmatics.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "elevenlabs.io",
+  "score": 50,
+  "rationale": "4 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://elevenlabs.io/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "inworld.ai",
+  "score": 50,
+  "rationale": "4 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://inworld.ai/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "bandwidth.com",
+  "score": 40,
+  "rationale": "3 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.bandwidth.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "cartesia.ai",
+  "score": 40,
+  "rationale": "4 signal phrases in title",
+  "sample_urls": [
+   "https://cartesia.ai/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "twilio.com",
+  "score": 40,
+  "rationale": "3 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.twilio.com/docs/voice"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "vapi.ai",
+  "score": 40,
+  "rationale": "2 signal phrases in title; api/docs in title; api/dev surface in domain",
+  "sample_urls": [
+   "https://vapi.ai/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "zegocloud.com",
+  "score": 40,
+  "rationale": "2 signal phrases in title; api/docs in title; api/dev surface in domain",
+  "sample_urls": [
+   "https://www.zegocloud.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "assemblyai.com",
+  "score": 30,
+  "rationale": "2 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.assemblyai.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "deepgram.com",
+  "score": 30,
+  "rationale": "2 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://deepgram.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "livekit.io",
+  "score": 30,
+  "rationale": "3 signal phrases in title",
+  "sample_urls": [
+   "https://livekit.io/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "pipecat.ai",
+  "score": 30,
+  "rationale": "3 signal phrases in title",
+  "sample_urls": [
+   "https://pipecat.ai/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "retellai.com",
+  "score": 30,
+  "rationale": "2 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.retellai.com/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "rev.ai",
+  "score": 30,
+  "rationale": "2 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://rev.ai"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "gladia.io",
+  "score": 20,
+  "rationale": "1 signal phrases in title; api/docs in title",
+  "sample_urls": [
+   "https://www.gladia.io/"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "x.ai",
+  "score": 20,
+  "rationale": "1 signal phrases in title",
+  "sample_urls": [
+   "https://docs.x.ai/developers/model-capabilities/audio/speech-to-speech"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "ai.google.dev",
+  "score": 20,
+  "rationale": "1 signal phrases in title",
+  "sample_urls": [
+   "https://ai.google.dev/gemini-api/docs/audio"
+  ],
+  "interest": "tts_voice_ai"
+ },
+ {
+  "domain": "symbl.ai",
+  "score": 0,
+  "rationale": "no strong signal",
+  "sample_urls": [
+   "https://symbl.ai/"
+  ],
+  "interest": "ts_voice_ai"
+ }
+]
