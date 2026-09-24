@@ -1,0 +1,22 @@
+{
+ "comment": "Bottom-up pipeline inventory. Each entry: what to scan for, which input formats reach the parser, where sources live, and fallback binary info.",
+ "pipelines": [
+  {"name": "openai-whisper / faster-whisper", "audio_path": "ffmpeg decode -> PCM", "packages": ["ffmpeg", "av", "ctranslate2"], "formats": ["mp3","wav","flac","ogg","m4a","opus"], "parser_layer": "libavcodec/libavformat (source: ffmpeg git)", "notes": "dr_libs family NOT in path; ffmpeg has own flac demuxer"},
+  {"name": "whisper.cpp", "audio_path": "dr_wav/dr_mp3/dr_flac single-header", "packages": ["dr_libs"], "formats": ["wav","mp3","flac","ogg"], "source": "https://github.com/mackron/dr_libs", "notes": "CVE-2026-32836 directly applies; vendored header"},
+  {"name": "piper TTS", "audio_path": "espeak-ng + onnxruntime", "packages": ["onnxruntime"], "formats": ["onnx"], "notes": "model files; different class - tensor parsing"},
+  {"name": "Coqui TTS / Mozilla TTS", "audio_path": "librosa + soundfile (libsndfile)", "packages": ["soundfile","libsndfile","librosa"], "formats": ["wav","flac","ogg","aiff"], "source": "https://github.com/libsndfile/libsndfile"},
+  {"name": "pyannote / speechbrain", "audio_path": "torchaudio (libsndfile)", "packages": ["torchaudio","libsndfile"], "formats": ["wav","flac","ogg","mp3"], "source": "https://github.com/pytorch/audio"},
+  {"name": "general ffmpeg-based ingest", "audio_path": "libavformat demuxers", "packages": ["ffmpeg"], "formats": ["everything"], "source": "https://git.ffmpeg.org/ffmpeg.git", "notes": "demuxer-level: block size fields, chunk lengths (RIFF/AIFF/Ogg)"},
+  {"name": "gstreamer pipelines", "audio_path": "typefind + plugins", "packages": ["gstreamer","gst-plugins-good/bad"], "formats": ["flac","ogg","wav","m4a"], "source": "https://gitlab.freedesktop.org/gstreamer"},
+  {"name": "pydub", "audio_path": "delegates to ffmpeg", "packages": ["pydub","ffmpeg"], "formats": ["ffmpeg set"]},
+  {"name": "audioread", "audio_path": "gstreamer/ffmpeg/wave backends", "packages": ["audioread"]},
+  {"name": "TTS APIs / cloud ingest", "audio_path": "proprietary", "packages": [], "formats": ["flac","wav","mp3"], "notes": "fallback: black box, content-probe payloads only"}
+ ],
+ "format_markers": {
+  "flac": {"magic": "fLaC", "vuln_classes": ["metadata length-field unchecked alloc (CVE-2026-32836)"], "length_fields": ["blockSize(24b)","mimeLength(32b)","descriptionLength(32b)","pictureDataSize(32b)"]},
+  "wav": {"magic": "RIFF....WAVE", "vuln_classes": ["chunk size mismatch","fmt extra-size fields","LIST/INFO chunk lengths"], "length_fields": ["chunkSize(32b)"]},
+  "ogg": {"magic": "OggS", "vuln_classes": ["segment count vs page size","granule handling"], "length_fields": ["nsegs(8b)","segs table"]},
+  "aiff": {"magic": "FORM....AIFF", "vuln_classes": ["chunk lengths"], "length_fields": ["chunkSize(32b)"]},
+  "m4a/aac": {"magic": "....ftyp", "vuln_classes": ["atom size (64-bit lengths)","mvhd/stsz tables"], "length_fields": ["atomSize(32/64b)"]}
+ }
+}
