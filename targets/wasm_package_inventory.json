@@ -1,0 +1,32 @@
+{
+ "comment": "WASM strategic inventory. Three roles: PARSER-TARGET (audio decoder compiled to wasm - native parser bugs have wasm twins), CARRIER (wasm smuggled in metadata, SIREN v1 vector), ESCAPE-SURFACE (runtime/compiler sandbox CVEs that turn 'wasm runs' into RCE).",
+ "parser_target_packages": [
+  {"name": "webaudio-node", "ecosystem": "npm", "wasm_decoders": ["dr_libs (MP3/WAV/FLAC)", "stb_vorbis (OGG)", "fdk-aac (AAC)"], "note": "dr_libs compiled to WASM -> CVE-2026-32836 grammar reaches Node/browser pipelines; Emscripten heap exhaustion instead of host OOM-kill, still DoS", "fingerprint": "pre-compiled .wasm in package, strings 'drflac__' inside wasm binary"},
+  {"name": "@wasm-audio-decoders/flac", "ecosystem": "npm", "wasm_decoders": ["libFLAC + codec-parser"], "note": "libFLAC not dr_libs - different bug class, but metadata path still parses PICTURE grammar", "fingerprint": "package name"},
+  {"name": "@wasm-audio-decoders/mp3|ogg-opus|aac", "ecosystem": "npm", "note": "codec-parser front-end parses container metadata in JS before wasm decode - JS-side length handling is its own surface"},
+  {"name": "@ffmpeg/ffmpeg (ffmpeg.wasm)", "ecosystem": "npm", "note": "full ffmpeg in wasm worker; worker memory limits turn parser OOM into worker crash/restart churn"},
+  {"name": "sndfile-wasm / waverly / wafl", "ecosystem": "npm/github", "note": "libsndfile-to-wasm ports; check libsndfile version for CVEs"},
+  {"name": "libflacjs / flac.js", "ecosystem": "npm", "note": "older libFLAC emscripten ports in long-tail packages"}
+ ],
+ "carrier_channels": [
+  {"container": "flac", "channel": "PADDING block", "note": "SIREN v1 vector - wasm magic 00 61 73 6d survives padding, extractor can instantiate"},
+  {"container": "mp3", "channel": "GEOB general encapsulated object", "note": "mime='application/wasm' + raw module"},
+  {"container": "mp3", "channel": "APIC with wasm bytes as 'image'", "note": "extractor that sniffs real type may hand bytes to a wasm loader"},
+  {"container": "mp4", "channel": "uuid atom", "note": "arbitrary payload, invisible to validators"},
+  {"container": "pdf", "channel": "/EmbeddedFiles", "note": "wasm carried as attachment; polyglot container bridge"},
+  {"container": "jxl", "channel": "JUMPF / brotli-compressed boxes", "note": "compressed wasm evades magic-scanning EDR"}
+ ],
+ "escape_surface_cves": [
+  {"cve": "CVE-2026-2796", "runtime": "SpiderMonkey/Firefox", "class": "wasm-import signature type confusion -> arbitrary R/W -> native code exec in content process", "relevance": "any pipeline that instantiates attacker wasm in Firefox-derived runtimes"},
+  {"cve": "CVE-2026-26956", "runtime": "vm2 (Node 25+)", "class": "try_table JSTag catches host-realm exception below JS sanitization layer -> host Function -> RCE", "relevance": "LLM/sandbox plugins using vm2 to run untrusted code that may embed wasm"},
+  {"cve": "CVE-2026-34987 / CVE-2026-34971", "runtime": "Wasmtime (Winch / Cranelift-aarch64)", "class": "compiler-backend sandbox escapes - miscompiled bounds checks give host read/write", "relevance": "server-side wasm ingestion of untrusted modules, incl. audio-decoder plugins"},
+  {"cve": "CVE-2026-5752", "runtime": "Terrarium/Pyodide (Cohere)", "class": "JS prototype traversal -> container escape", "relevance": "AI code-exec sandboxes that also process audio uploads"}
+ ],
+ "hunt_queries": [
+  "npm: 'wasm audio decoder flac' / 'dr_libs wasm' / 'webaudio-node' dependents",
+  "github code search: 'drflac__read_and_decode_metadata' + emscripten/cmake wasm",
+  "github code search: 'EMSCRIPTEN' + 'dr_flac.h' in binding.gyp/CMakeLists",
+  "npm package scan: any package shipping .wasm >100KB with 'flac|mp3|vorbis|aac' strings",
+  "pip: packages bundling .wasm (pyodide-based audio tools, pydub-wasm)"
+ ]
+}
