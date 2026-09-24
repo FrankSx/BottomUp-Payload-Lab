@@ -1,0 +1,95 @@
+{
+ "comment": "Metadata-attachment battery. Channels where each container accepts attached metadata/content, and the hostile content classes to inject. Generated files are proof-of-concept markers (alert-style JS, format strings, bidi/null traps) for authorized pipeline testing only.",
+ "content_classes": {
+  "fmt_string": ["%s%s%s%s%n", "%.999999999s", "%.2147483647d", "%999999999c"],
+  "html_js": ["<script>alert('SIREN-META')</script>", "<img src=x onerror=alert('SIREN-META')>", "<svg onload=alert('SIREN-META')>"],
+  "active_svg": ["<svg xmlns='http://www.w3.org/2000/svg'><script>alert('SIREN-META')</script></svg>", "<svg><animate onbegin=alert('SIREN-META') attributeName=x>"],
+  "weird": ["\u0000after-nul", "A\u202eB\u202cC-bidi", "\u0001\u0002ctrl", "%00trunc", "quotes'\"<>esc", "line1\nline2\r\n", "emoji\ud83d\udc40", "overlong: \u00c0\u00ae"],
+  "length_trap": ["0xFFFFFFFF", "0xFFFFFFFE", "0x7FFFFFFF", "0x80000000"]
+ },
+ "containers": [
+    {"name": "flac", "channels": [
+      {"id": "vorbis_vendor", "grammar": "len:u32LE + bytes, first block", "growth": true, "note": "SSML/HTML in vendor string (SIREN v1/v2 carrier)"},
+      {"id": "vorbis_user_comment", "grammar": "len:u32LE + KEY=value", "growth": true},
+      {"id": "picture_block", "grammar": "FLAC PICTURE (mime/desc/data lens)", "growth": false, "bridge": "base64 -> METADATA_BLOCK_PICTURE reaches Opus/Vorbis"}
+    ]},
+    {"name": "ogg/opus", "channels": [
+      {"id": "opustags_vendor", "grammar": "OpusTags + len:u32LE", "growth": true},
+      {"id": "metadatablockpicture", "grammar": "comment METADATA_BLOCK_PICTURE=<base64 FLAC PICTURE>", "growth": true, "bridge": "decoded + re-parsed by cover-art extractors"}
+    ]},
+    {"name": "mp3_id3v2", "channels": [
+      {"id": "TXXX", "grammar": "frame: size:u32(synchsafe) + encoding + desc\u0000 value", "growth": true},
+      {"id": "APIC", "grammar": "size + encoding + mime\u0000 pictype + desc\u0000 + image", "growth": false, "bridge": "embed HTML-as-image; extractors sniff real type"},
+      {"id": "GEOB", "grammar": "size + encoding + mime\u0000 + name\u0000 + object", "growth": true, "note": "general encapsulated object — arbitrary bytes in a tag"},
+      {"id": "COMM/USLT", "grammar": "text frames", "growth": true}
+    ]},
+    {"name": "webp", "channels": [
+      {"id": "EXIF", "grammar": "RIFF chunk 'EXIF' -> TIFF IFD", "growth": true},
+      {"id": "XMP ", "grammar": "RIFF chunk 'XMP ' -> RDF/XML", "growth": true, "note": "full XML parser surface; XInclude/entities if parser is naive"},
+      {"id": "ICCP", "grammar": "RIFF chunk 'iCCP'", "growth": false},
+      {"id": "VP8X_extended_canvas", "grammar": "VP8X canvas 24-bit w/h (16383 max spec; >24-bit read = OOB reads in sloppy decoders)", "growth": false}
+    ]},
+    {"name": "jpeg", "channels": [
+      {"id": "APP1_EXIF", "grammar": "marker len:u16BE + TIFF", "growth": true},
+      {"id": "APP1_XMP", "grammar": "http://ns.adobe.com/xap/1.0/\u0000 + RDF", "growth": true},
+      {"id": "APP13_PHOTOSHOP_IRB", "grammar": "8BIM blocks with own length fields", "growth": true},
+      {"id": "COM", "grammar": "marker len:u16BE + raw text", "growth": true},
+      {"id": "DQT/DHT_sos_confusion", "grammar": "length fields mid-scan", "growth": false}
+    ]},
+    {"name": "png", "channels": [
+      {"id": "tEXt", "grammar": "chunk len:u32BE keyword\u0000 text", "growth": true},
+      {"id": "zTXt", "grammar": "chunk + zlib text", "growth": true, "note": "decompression differential"},
+      {"id": "iTXt", "grammar": "chunk, UTF-8, uncompressed/compressed, translated", "growth": true},
+      {"id": "eXIf", "grammar": "TIFF IFD", "growth": true},
+      {"id": "iCCP/iTXt_utf8_bidi", "grammar": "UTF-8 label channels", "growth": true, "note": "bidi override in display pipelines"}
+    ]},
+    {"name": "jxl", "channels": [
+      {"id": "Exif_box", "grammar": "box size:u32 + 'Exif' + TIFF", "growth": true},
+      {"id": "xml_box", "grammar": "box 'xml ' -> raw XML", "growth": true, "note": "native XML box — active SVG possible if rendered"},
+      {"id": "jxlp_partial", "grammar": "partial codestream boxes", "growth": false},
+      {"id": "JUMBF", "grammar": "JPEG Universal Metadata Box Format", "growth": true}
+    ]},
+    {"name": "webm/ebml", "channels": [
+      {"id": "Tags", "grammar": "EBML element: size varint + nested TagName/TagString", "growth": true},
+      {"id": "ChapProcess", "grammar": "chap process commands", "growth": true},
+      {"id": "SeekHead_Resync", "grammar": "element IDs + varint sizes incl. unknown-size 0x01FF...", "growth": false},
+      {"id": "Attachments_FileDescription", "grammar": "attached files with mime + name", "growth": true, "bridge": "SVG/HTML attached with video mime -> player UI renders"}
+    ]},
+    {"name": "wav", "channels": [
+      {"id": "LIST_INFO", "grammar": "chunk len:u32LE + INFO subchunks (INAM/IART/ICMT...)", "growth": true},
+      {"id": "id3_in_wav", "grammar": "id3 chunk inside RIFF", "growth": true, "bridge": "full ID3v2 surface inside WAV"},
+      {"id": "cue_adtl", "grammar": "cue/label chunks with lengths", "growth": true}
+    ]},
+    {"name": "mp4/isobmff", "channels": [
+      {"id": "udta_meta_ilst", "grammar": "atom size:u32 + ilst data atoms (\u00a9nam/\u00a9cmt/...)", "growth": true},
+      {"id": "xml_", "grammar": "atom 'xml ' custom metadata", "growth": true},
+      {"id": "uuid", "grammar": "user-defined atoms with 16-byte uuid + payload", "growth": true, "note": "arbitrary boxes invisible to most validators"},
+      {"id": "64bit_largesize", "grammar": "size==1 -> 64-bit largesize field", "growth": false, "note": "length-field class: 64-bit atom sizes"}
+    ]},
+    {"name": "avif/heic", "channels": [
+      {"id": "iinf/infe", "grammar": "item info entries (mime/name)", "growth": true},
+      {"id": "XMP_in_mdat", "grammar": "XMP via item reference", "growth": true},
+      {"id": "thumbnails", "grammar": "thmb item references", "growth": false}
+    ]},
+    {"name": "pdf", "channels": [
+      {"id": "Info_dict", "grammar": "/Title /Author /Keywords (PDF strings, escapes, UTF-16)", "growth": true},
+      {"id": "xmp_metadata_stream", "grammar": "Metadata stream, XML", "growth": true},
+      {"id": "embedded_files", "grammar": "/EmbeddedFiles name tree", "growth": true, "bridge": "carry any of the above inside PDF"},
+      {"id": "javascript_in_names", "grammar": "name strings reach viewers' UI layers", "growth": true}
+    ]},
+    {"name": "tiff", "channels": [
+      {"id": "IFD_tags", "grammar": "tag:type:count:value(4B or offset)", "growth": true},
+      {"id": "SubIFD/XMP tag 700", "grammar": "tag 700 = XMP", "growth": true},
+      {"id": "Photoshop tag 34377", "grammar": "IRB blocks", "growth": true},
+      {"id": "ImageSourceData tag 37724", "grammar": "big JPEG APP13 twin", "growth": true}
+    ]}
+ ],
+ "growth_hooks": {
+  "comment": "Where 'growth' (active execution) can realistically ignite downstream, per pipeline",
+  "web_ui_rendering": "metadata strings rendered into HTML pages (music libraries, asset managers) -> stored XSS via title/artist/comment; SVG/XMP blobs rendered as images -> active SVG",
+  "llm_ingest": "metadata extracted to text context -> prompt-injection carrier; bidi/null break sanitizers",
+  "transcode_bridges": "metadata copied across containers on transcode (FLAC->Opus picture bridge) carrying payload to a parser that re-interprets it",
+  "thumbnailing": "cover art extracted and re-encoded; SVG/HTML payloads reach image renderers or XML parsers",
+  "format_string_sinks": "C pipelines that printf() metadata into logs/UI -> %n crash / infoleak (fmt_string class)"
+ }
+}
