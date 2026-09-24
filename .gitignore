@@ -1,0 +1,9 @@
+node_modules/
+battery_out/
+__pycache__/
+*.pyc
+warel.key
+warel.pem
+*.zip
+scan_results.json
+wasm_hunt_results.json
