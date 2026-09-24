@@ -1,0 +1,74 @@
+{
+ "comment": "Interest-driven query banks for target discovery. Each interest maps to search queries whose results surface services running the parser chains in pipeline_inventory.json. Collect results (paste/JSON), score domains, feed warel/domcap collector.",
+ "interests": {
+  "tts_voice_ai": {
+   "description": "TTS/voice-AI platforms with audio upload or SSML endpoints",
+   "queries": [
+    "voice AI platform API audio upload developers",
+    "text to speech API SSML support docs",
+    "voice cloning API upload sample audio",
+    "AI voice agent platform API documentation audio",
+    "speech synthesis API custom voice upload"
+   ],
+   "ideal_signals": ["audio upload endpoint", "SSML accepted", "voice sample upload", "format auto-detect"]
+  },
+  "podcast_music_hosting": {
+   "description": "Podcast/music hosts that transcode + extract cover art on ingest",
+   "queries": [
+    "podcast hosting API upload episode artwork",
+    "music distribution API audio upload metadata",
+    "audio hosting platform API transcode",
+    "podcast platform ingest requirements flac wav"
+   ],
+   "ideal_signals": ["cover art extraction", "transcode pipeline", "metadata display", "RSS with media"]
+  },
+  "multimodal_ai_ingest": {
+   "description": "AI platforms accepting audio for transcription/RAG",
+   "queries": [
+    "multimodal AI platform audio upload API",
+    "audio transcription API file formats supported",
+    "voice notes AI assistant upload",
+    "RAG platform audio document ingestion"
+   ],
+   "ideal_signals": ["flac/opus in supported formats", "metadata extraction", "embedding pipeline"]
+  },
+  "web_audio_apps": {
+   "description": "Browser apps decoding audio client-side (WASM decoder surface)",
+   "queries": [
+    "web audio editor online flac upload",
+    "online audio converter flac opus wav",
+    "browser DAW audio upload wav",
+    "WebAssembly audio decoder online tool"
+   ],
+   "ideal_signals": ["client-side decode (wasm)", "upload then analyze", "waveform display"]
+  },
+  "voice_social": {
+   "description": "Social/consumer apps with voice notes and audio messages",
+   "queries": [
+    "messaging app voice notes audio format",
+    "social platform audio message API",
+    "clubhouse-like audio rooms platform"
+   ],
+   "ideal_signals": ["opus/flac in pipeline", "metadata shown in UI", "transcription feature"]
+  },
+  "bug_bounty_audio": {
+   "description": "Direct BB-program discovery for authorized testing",
+   "queries": [
+    "site:hackerone.com audio upload accepted",
+    "site:bugcrowd.com audio file upload scope",
+    "\"audio upload\" in:scope vulnerability disclosure program"
+   ],
+   "ideal_signals": ["explicit scope", "authorized testing", "audio handling in scope"]
+  }
+ },
+ "scoring": {
+  "comment": "per-domain heuristic score 0-100; >=60 = priority dive",
+  "weights": {
+   "matches_interest_signals": 40,
+   "docs_mention_formats": 20,
+   "api_public": 15,
+   "auth_required_none_or_key": 10,
+   "bounty_program_listed": 15
+  }
+ }
+}
